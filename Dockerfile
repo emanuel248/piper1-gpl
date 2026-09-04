@@ -6,8 +6,9 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY pyproject.toml setup.py CMakeLists.txt MANIFEST.in README.md ./
-COPY src/piper/ ./src/piper/
+COPY pyproject.toml setup.py CMakeLists.txt MANIFEST.in README.md COPYING ./
+COPY src/ ./src/
+COPY licenses/ ./licenses/
 COPY script/setup script/dev_build script/package ./script/
 RUN script/setup --dev
 RUN script/dev_build
@@ -22,7 +23,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 WORKDIR /app
 COPY --from=builder /app/dist/piper_tts-*linux*.whl ./dist/
 RUN pip3 install ./dist/piper_tts-*linux*.whl
-RUN pip3 install 'flask>=3,<4'
+RUN pip3 install 'flask>=3,<4' 'tokenizers>=0.13,<1' 'fida-normalizer>=0.1.1,<1'
 
 COPY docker/entrypoint.sh /
 

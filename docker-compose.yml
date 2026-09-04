@@ -1,0 +1,8 @@
+services:
+  piper-tts:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+    command: server -m en_US-kristin-medium

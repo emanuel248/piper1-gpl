@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Optional
 from urllib.request import urlopen
 
 from flask import Flask, render_template, request
+from tokenizers.normalizers import BertNormalizer
+from Normalizer import Normalizer as FidaNormalizer
 
 from . import PiperVoice, SynthesisConfig
 from .download_voices import VOICES_JSON, download_voice
@@ -226,12 +228,20 @@ def main() -> None:
           "length_scale": 1.0,           (optional)
           "noise_scale": 0.667,          (optional)
           "length_w_scale": 0.8          (optional)
+          "normalize_text": false        (optional)
         }
         """
         data = json.loads(request.data)
         text = data.get("text", "").strip()
         if not text:
             raise ValueError("No text provided")
+
+        normalize_text = data.get("normalize_text", False)
+        if normalize_text:
+            normalizer = BertNormalizer(lowercase=True)
+            fida_normalizer = FidaNormalizer(lang='en')
+            text = normalizer.normalize_str(text)
+            text = fida_normalizer.normalize(text)
 
         _LOGGER.debug(data)
 

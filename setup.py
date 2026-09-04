@@ -7,10 +7,15 @@ from skbuild import setup
 
 MODULE_DIR = Path(__file__).parent / "src" / "piper"
 PIPER_DATA_FILES = ["py.typed", "espeakbridge.pyi"]
+
+def _rglob_files(base_dir):
+    if not base_dir.is_dir():
+        return []
+    return [f.relative_to(MODULE_DIR) for f in base_dir.rglob("*") if f.is_file()]
+
 ESPEAK_NG_DATA_DIR = MODULE_DIR / "espeak-ng-data"
-ESPEAK_NG_DATA_FILES = [
-    f.relative_to(MODULE_DIR) for f in ESPEAK_NG_DATA_DIR.rglob("*") if f.is_file()
-]
+ESPEAK_NG_DATA_FILES = _rglob_files(ESPEAK_NG_DATA_DIR)
+
 TASHKEEL_DATA_DIR = MODULE_DIR / "tashkeel"
 TASHKEEL_DATA_FILES = [
     (TASHKEEL_DATA_DIR / f_name).relative_to(MODULE_DIR)
@@ -20,7 +25,9 @@ TASHKEEL_DATA_FILES = [
         "target_id_map.json",
         "hint_id_map.json",
     )
+    if (TASHKEEL_DATA_DIR / f_name).exists()
 ]
+
 HEBREW_DATA_DIR = MODULE_DIR / "hebrew"
 HEBREW_DATA_FILES = [
     (HEBREW_DATA_DIR / f_name).relative_to(MODULE_DIR)
@@ -29,16 +36,11 @@ HEBREW_DATA_FILES = [
         "LICENSE",
         "SOURCE",
     )
+    if (HEBREW_DATA_DIR / f_name).exists()
 ]
+
 # Web page and images for the HTTP server
-HTTP_DATA_FILES = [
-    f.relative_to(MODULE_DIR)
-    for f in itertools.chain(
-        (MODULE_DIR / "templates").rglob("*"),
-        (MODULE_DIR / "img").rglob("*"),
-    )
-    if f.is_file()
-]
+HTTP_DATA_FILES = _rglob_files(MODULE_DIR / "templates") + _rglob_files(MODULE_DIR / "img")
 
 setup(
     name="piper-tts",
@@ -103,6 +105,7 @@ setup(
             # (~750 MB) out of this extra: g2pw.api imports it for a DataLoader.
             "g2pW>=0.1.1,<1",
             "transformers>=4,<6",
+
             "sentence-stream>=1.2.1,<2",
             "unicode-rbnf>=2.4.0,<3",
         ],
@@ -110,14 +113,8 @@ setup(
             "pyopenjtalk-plus>=0.4,<1",
         ],
     },
-    packages=[
-        "piper",
-        "piper.tashkeel",
-        "piper.hebrew",
-        "piper.train",
-        "piper.train.vits",
-        "piper.train.vits.monotonic_align",
-    ],
+    packages=["piper", "piper.tashkeel", "piper.train", "piper.train.vits", "piper.train.vits.monotonic_align"]
+    + (["piper.hebrew"] if HEBREW_DATA_DIR.is_dir() else []),
     package_dir={"": "src"},
     include_package_data=True,
     package_data={
