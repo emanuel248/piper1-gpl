@@ -2,6 +2,8 @@
 
 A fast and local neural text-to-speech engine that embeds [espeak-ng][] for phonemization.
 
+# This repository contains additional commits to fix the docker build and and a compose file for running. It also contains a patch of the python server to enable tts text normalization.
+
 Install with:
 
 ``` sh
